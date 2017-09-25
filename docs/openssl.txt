@@ -1,0 +1,100 @@
+To generate an RSA key, use the genrsa command:
+
+$ openssl genrsa -aes256 -out private.key 4096
+
+------------------------------------------------------------------------------------------------------------------------
+You can see a key’s structure using the following rsa command:
+
+$ openssl rsa -text -in private.key
+
+------------------------------------------------------------------------------------------------------------------------
+Remove password from key
+
+openssl rsa -in private.key -out private.key
+ 
+------------------------------------------------------------------------------------------------------------------------
+If you need to have just the public part of a key separately, you can do that with the following rsa command:
+
+$ openssl rsa -in private.key -pubout -out public.key
+
+------------------------------------------------------------------------------------------------------------------------
+Once you have a private key, you can proceed to create a Certificate Signing Request (CSR).
+This is a formal request asking a CA to sign a certificate, and it contains the public key of the
+entity requesting the certificate and some information about the entity. This data will all be
+part of the certificate. A CSR is always signed with the private key corresponding to the
+public key it carries.
+CSR creation is usually an interactive process, during which you’ll be providing the elements
+of the certificate distinguished name. Read the instructions given by the openssl tool
+carefully; if you want a field to be empty, you must enter a single dot (.) on the line, rather
+than just hit Return. If you do the latter, OpenSSL will populate the corresponding CSR field
+with the default value. (This behavior doesn’t make any sense when used with the default
+OpenSSL configuration, which is what virtually everyone does. It does make sense once you
+realize you can actually change the defaults, either by modifying the OpenSSL configuration
+or by providing your own configuration files.)
+
+$ openssl req -new -key private.key -out request.csr
+
+------------------------------------------------------------------------------------------------------------------------
+Check that the CSR is correct
+
+$ openssl req -text -in request.csr -noout
+
+------------------------------------------------------------------------------------------------------------------------
+If you’re installing a TLS server for your own use, you probably don’t want to go to a CA to
+get a publicly trusted certificate. It’s much easier to sign your own. The fastest way to do this
+is to generate a self-signed certificate. If you’re a Firefox user, on your first visit to the web
+site you can create a certificate exception, after which the site will be as secure as if it were
+protected with a publicly trusted certificate.
+If you already have a CSR, create a certificate using the following command:
+
+$ openssl x509 -req -days 365 -in request.csr -signkey private.key -out demo.crt
+
+------------------------------------------------------------------------------------------------------------------------
+You don’t actually have to create a CSR in a separate step. The following command creates a
+self-signed certificate starting with a key alone:
+
+$ openssl req -new -x509 -days 365 -key private.key -out demo.crt
+
+------------------------------------------------------------------------------------------------------------------------
+If you don’t wish to be asked any questions, use the -subj switch to provide the certificate
+subject information on the command line:
+
+$ openssl req -new -x509 -days 365 -key private.key -out demo.crt -subj "/C=GB/L=London/O=Feisty Duck Ltd/CN=www.feistyduck.com"
+
+------------------------------------------------------------------------------------------------------------------------
+There are two mechanisms for supporting multiple hostnames in a certificate. The first is to
+list all desired hostnames using an X.509 extension called Subject Alternative Name (SAN).
+The second is to use wildcards. You can also use a combination of the two approaches when
+it’s more convenient. In practice, for most sites, you can specify a bare domain name and a
+wildcard to cover all the subdomains (e.g., feistyduck.com and *.feistyduck.com).
+
+Warning
+When a certificate contains alternative names, all common names are ignored.
+Newer certificates produced by CAs may not even include any common names. For
+that reason, include all desired hostnames on the alternative names list.
+
+First, place the extension information in a separate text file. I’m going to call it extensions.ext. In
+the file, specify the name of the extension (subjectAltName) and list the desired hostnames,
+as in the following example:
+
+subjectAltName = DNS:*.feistyduck.com, DNS:feistyduck.com
+
+Then, when using the x509 command to issue a certificate, refer to the file using the
+-extfile switch:
+
+$ openssl x509 -req -days 365 -in request.csr -signkey private.key -out demo.crt -extfile extensions.ext
+
+------------------------------------------------------------------------------------------------------------------------
+Certificates might look a lot like random data at first glance, but they contain a great deal of
+information; you just need to know how to unpack it. The x509 command does just that, so
+use it to look at the self-signed certificates you generated.
+In the following example, I use the -text switch to print certificate contents and -noout to
+reduce clutter by not printing the encoded certificate itself (which is the default behavior):
+
+$ openssl x509 -text -in demo.crt -noout
+
+------------------------------------------------------------------------------------------------------------------------
+extensions
+
+openssl req -new -x509 -extensions v3_ca -keyout private.key -out demo.crt -days 365 -config ./openssl.cnf
+
