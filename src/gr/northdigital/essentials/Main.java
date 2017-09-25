@@ -17,24 +17,16 @@ public class Main {
     if (bytes == null) {
       return null;
     }
-    ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(bytes));
-    ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
-    aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-    return aIn.readObject().toString();
+    ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(bytes));
+    ASN1OctetString asn1OctetString = (ASN1OctetString) asn1InputStream.readObject();
+    asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(asn1OctetString.getOctets()));
+    return asn1InputStream.readObject().toString();
   }
 
   public static void main(String[] args) throws CertificateException, IOException, InvalidNameException {
-    CertificateFactory fact = CertificateFactory.getInstance("X.509");
-    FileInputStream is = new FileInputStream("C:\\Users\\Panagiotis\\Documents\\ForBackup\\Projects\\northdigital\\ssl-demo\\demo.crt");
-    X509Certificate cer = (X509Certificate) fact.generateCertificate(is);
-
-//    String name = cer.getSubjectDN().getName();
-//
-//    LdapName dn = new LdapName(name);
-//    System.out.println(dn + " has " + dn.size() + " RDNs: ");
-//    for (int i = 0; i < dn.size(); i++) {
-//      System.out.println(dn.get(i));
-//    }
+    CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+    FileInputStream fileInputStream = new FileInputStream("C:\\Users\\Panagiotis\\Documents\\ForBackup\\Projects\\northdigital\\ssl-demo\\demo.crt");
+    X509Certificate cer = (X509Certificate) certificateFactory.generateCertificate(fileInputStream);
 
     System.out.println(getExtensionValue(cer, "1.1.1.3.7"));
   }
