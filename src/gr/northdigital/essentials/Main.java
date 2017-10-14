@@ -25,9 +25,10 @@ public class Main {
 
   public static void main(String[] args) throws CertificateException, IOException, InvalidNameException {
     CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
-    FileInputStream fileInputStream = new FileInputStream("C:\\Users\\Panagiotis\\Documents\\ForBackup\\Projects\\northdigital\\ssl-demo\\demo.crt");
+    FileInputStream fileInputStream = new FileInputStream("C:\\Users\\Panagiotis\\Documents\\ForBackup\\Projects\\northdigital\\ssl-demo\\user1.crt");
     X509Certificate cer = (X509Certificate) certificateFactory.generateCertificate(fileInputStream);
 
-    System.out.println(getExtensionValue(cer, "1.1.1.3.7"));
+    System.out.println(getExtensionValue(cer, "1.2.3.101"));
+    System.out.println(getExtensionValue(cer, "1.2.3.102"));
   }
 }
